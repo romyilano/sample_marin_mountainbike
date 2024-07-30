@@ -56,17 +56,51 @@
         </div>
     </body>
     <script>
-    const fullscreenTarget = document.getElementById('fullscreenTarget');
-    fullscreenTarget.addEventListener('click', event => {
-    try {
-        if (fullscreenTarget.requestFullscreen) {
-        fullscreenTarget.requestFullscreen();
-        } else if (fullscreenTarget.webkitRequestFullscreen) { // Safari
-        fullscreenTarget.webkitRequestFullscreen();
-        }
-    } catch(error) {
-        console.error('Failed to enter fullscreen mode:', error);
+        const fullscreenTarget = document.getElementById('fullscreenTarget');
+const heicSource = fullscreenTarget.querySelector('source');
+const fallbackImage = fullscreenTarget.querySelector('img');
+
+fullscreenTarget.addEventListener('click', async event => {
+  try {
+    // Create a new image element for the HEIC image
+    const heicImage = new Image();
+    heicImage.src = heicSource.srcset;
+    
+    // Wait for the HEIC image to load
+    await heicImage.decode();
+    
+    // Replace the content of the picture element with the HEIC image
+    fullscreenTarget.innerHTML = '';
+    fullscreenTarget.appendChild(heicImage);
+    
+    // Request fullscreen
+    if (fullscreenTarget.requestFullscreen) {
+      await fullscreenTarget.requestFullscreen();
+    } else if (fullscreenTarget.webkitRequestFullscreen) { // Safari
+      await fullscreenTarget.webkitRequestFullscreen();
     }
-    });
+  } catch(error) {
+    console.error('Failed to enter fullscreen mode or load HEIC:', error);
+    // If HEIC fails, fallback to PNG
+    fullscreenTarget.innerHTML = '';
+    fullscreenTarget.appendChild(fallbackImage.cloneNode(true));
+    
+    // Try fullscreen again with PNG
+    if (fullscreenTarget.requestFullscreen) {
+      fullscreenTarget.requestFullscreen();
+    } else if (fullscreenTarget.webkitRequestFullscreen) { // Safari
+      fullscreenTarget.webkitRequestFullscreen();
+    }
+  }
+});
+
+// Restore original picture content when exiting fullscreen
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    fullscreenTarget.innerHTML = '';
+    fullscreenTarget.appendChild(heicSource.cloneNode(true));
+    fullscreenTarget.appendChild(fallbackImage.cloneNode(true));
+  }
+});
     </script>
     </html>
