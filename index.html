@@ -102,5 +102,13 @@ document.addEventListener('fullscreenchange', () => {
     fullscreenTarget.appendChild(fallbackImage.cloneNode(true));
   }
 });
+// Restore original picture content when exiting fullscreen
+document.addEventListener('fullscreenchange', () => {
+  if (!document.fullscreenElement) {
+    fullscreenTarget.innerHTML = '';
+    fullscreenTarget.appendChild(heicSource.cloneNode(true));
+    fullscreenTarget.appendChild(fallbackImage.cloneNode(true));
+  }
+});
     </script>
     </html>
